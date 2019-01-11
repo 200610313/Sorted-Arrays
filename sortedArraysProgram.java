@@ -1,27 +1,22 @@
 //Angelu Ferdinand Garcia
 //BSCS1
-//1/9/2019
+//1/12/19
 //Sir Jesse Lagrosas
 //This program enables user to make a list of numbers; insert, delete, search, and display values
 
-
 import java.util.Scanner;
-public class sortedArraysProgram
+public class arrayMenu
 {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.print("Enter number of values to insert: ");
+
         int size = input.nextInt();
-        int[] array = new int[size];
+        arrays array = new arrays(size);
+
         int choice;
-        //int ctr=0;
-        int delLoc=size-1;
-        boolean userHasDeleted = false;
-
-        manipulateArray manipulator = new manipulateArray(0);//create obj
-
         do{
-            manipulator.printMenu();
+            array.printOptions();
             choice = input.nextInt();
 
             switch(choice)
@@ -29,83 +24,70 @@ public class sortedArraysProgram
                 case 0:
                     return;
                 case 1:
-                    if (manipulator.getArrayIndex()<size)
+                    if (!array.isArrayFull())//(ctr<size)
                     {
                         System.out.print("Enter value to insert: ");
-
-                        if (manipulator.getArrayIndex()==0)//if first insert, do not sort yet
-                        {
-                            int el = input.nextInt();
-                            array=manipulator.addFirstElement(array,el);
-                            break;
-                        }
-                        else
-                        {
-                            int el = input.nextInt();
-                            array=manipulator.addElement(array,el);
-
-                            if (userHasDeleted)
-                            {
-                                delLoc++;
-                            }
-                            break;
-                        }
+                        int el = input.nextInt();
+                        array.insert(el);
+                        break;
                     }
                     else
                     {
                         System.out.print("Error: exceeded number of insertions, delete a value first.");
+                        System.out.println(" ");
                         break;
                     }
 
                 case 2:
                     System.out.print("Enter value to delete: ");
-                    int el = input.nextInt();
-
-                    array=manipulator.delElement(array,el);
-
-
-                    if (manipulator.isSuccessDelete())
-                    {
-                        array[delLoc]=0;
-                        userHasDeleted=true;
-                        delLoc--;
-                        break;
-                    }
-                    else
-                        System.out.println(el+" is not in the list.");
-                        break;
+                    int el=input.nextInt();
+                    array.delete(el);
+                    break;
 
                 case 3:
                     System.out.print("Enter value to search: ");
-                    int ele = input.nextInt();
-                    manipulator.elSearch(array,ele);
-                    break;
+                    int val = input.nextInt();
+
+                    if (array.isFound(val) == true)
+                    {
+                        System.out.println(val+" is in the list.");
+                        break;
+                    }
+                    else
+                    {
+                        System.out.print(val+" is not in the list.");
+                        break;
+                    }
+
                 case 4:
                     System.out.print("Numbers in the list : ");
-                    manipulator.printArray(array);
+                    array.printList();
                     break;
             }
         }while(true);
     }
 }
 
-public class manipulateArray
+public class arrays
 {
-    private int arrayIndex;//fields
-    private boolean successDelete;
+    private int[] array;
+    private int size;
+    private int ctr;
+    private int delLoc;
+    private boolean userHasDeleted;
+    private boolean isDeleted;
 
-    public manipulateArray(int val)//initializing array index
-                                    // constructor
-                                    //setter
+    public arrays(int x)
     {
-       arrayIndex=val;
+        size = x;
+        array = new int[size];
+        ctr = 0;
+        delLoc = size-1;
+        userHasDeleted = false;
+        isDeleted = false;
     }
-    public int getArrayIndex()
-    {
-        return arrayIndex;
-    }
-    //operations
-    public void printMenu()
+
+    public void printOptions()
     {
         System.out.println("");
         System.out.println("0 - Exit");
@@ -114,85 +96,97 @@ public class manipulateArray
         System.out.println("3 - Search");
         System.out.println("4 - Display");
         System.out.print("Enter choice: ");
-    }
-
-    public int[] addFirstElement(int[] arr, int el)//no need to sort
-    {
-        arr[arrayIndex]=el;
-        arrayIndex++;
-        return arr;
-    }
-
-    public int[] addElement(int[] arr, int el)
-    {
-        arr[arrayIndex]=el;
-
-        for (int j = 0; j<arrayIndex; j++)
-        {
-            if (arr[arrayIndex]<arr[j])
-            {
-                int temp = arr[arrayIndex];
-                for (int k = arrayIndex; k>j; k--)
-                {
-                    arr[k]=arr[k-1];
-                }
-                arr[j]=temp;//store
-            }
-        }
-        arrayIndex++;
-        return arr;
-    }
-
-    public int[] delElement(int[] arr, int el)
-    {
-        int delVal=el;
-        successDelete=false;//reset
-        for (int c = 0; c<arr.length;c++)
-        {
-            if (arr[c]==delVal)
-            {
-                successDelete=true;
-                for (int d = c; d<arr.length-1;d++)
-                {
-                    arr[d]=arr[d+1];
-                }
-            }
-        }
-        arrayIndex--;
-        return arr;
-    }
-
-    public boolean isSuccessDelete()
-    {
-        return successDelete;
-    }
-
-    public void elSearch(int[] arr, int el)
-    {
-        for (int l = 0; l<arr.length;l++)
-        {
-            if (arr[l]==el)
-            {
-                System.out.println(el+" is in the list.");
-                return;
-            }
-        }
-        System.out.print(el+" is not in the list.");
-        System.out.println(" ");
         return;
     }
 
-    public void printArray(int[] arr)
+    public boolean isArrayFull()
     {
-        for (int a =0; a<arr.length; a++)
+        if (ctr<size)
+            return false;
+        else
+            return true;
+    }
+
+    public void insert(int el)
+    {
+        array[ctr] = el;
+        if (ctr == 0) //if first insertion, don't sort.
         {
-            if(arr[a]>0)
+            ctr++;
+            return;
+        }
+
+        else {
+            for (int j = 0; j < ctr; j++)//checking if the input is in the right position
             {
-                System.out.print(arr[a]+" ");
+                if (array[ctr] < array[j])//j=index of array where the digit should be
+                {
+                    int temp = array[ctr];
+                    for (int k = ctr; k > j; k--) {
+                        array[k] = array[k - 1];//copy the element beside it
+                    }
+                    array[j] = temp;//storing the element to its right place
+                }
+            }
+            ctr++;
+            if (userHasDeleted)
+            {
+                delLoc++;
+                return;
+            }
+            else
+                return;
+
+        }
+    }
+
+    public void delete(int el)
+    {
+        for (int c = 0; c<size; c++)
+        {
+            if (array[c]==el)
+            {
+                for (int d=c; d<size-1; d++)
+                {
+                    array[d]=array[d+1];
+                }
+                isDeleted = true;
+            }
+        }
+        if (isDeleted == true)
+        {
+            array[delLoc]=0;
+            userHasDeleted=true;
+            delLoc--;
+            ctr--;
+            return;
+        }
+        else
+            return;
+    }
+
+    public boolean isFound(int el)
+    {
+        for (int l = 0; l<size;l++)
+        {
+            if (array[l]==el)
+            {
+                System.out.println(el+" is in the list.");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void printList()
+    {
+        for (int a =0; a<size; a++)
+        {
+            if(array[a]>0)
+            {
+                System.out.print(array[a]+" ");
             }
         }
         System.out.println("");
-        return;
     }
 }
-
